@@ -1,10 +1,36 @@
 'use client'
-import axios from 'axios';
 import React, { useState } from 'react';
 import { Box, Button, Checkbox, FormControlLabel, TextField, Typography, Link } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 const backgroundImageUrl = 'https://images.pexels.com/photos/9668274/pexels-photo-9668274.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
+
+// Login fonksiyonu
+const login = async (email: string, password: string) => {
+    const response = await fetch('http://localhost:8080/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        const token = data.token;
+        const role = data.role;
+
+        localStorage.setItem('authToken', token);
+
+
+        if (role === 'ADMIN') {
+            window.location.href = '/admin';
+        } else if (role === 'USER') {
+            window.location.href = '/user';
+        }
+        console.log(token);
+    } else {
+        throw new Error('Geçersiz e-posta veya parola!');
+    }
+};
 
 const Login = () => {
     const [email, setEmail] = useState<string>('');
@@ -16,28 +42,10 @@ const Login = () => {
         event.preventDefault();
         try {
             console.log("Login request initiated...");
-
-            const response = await axios.post(
-                'http://localhost:8080/api/login',
-                { email, password },
-                { withCredentials: true }
-            );
-            //const token = response.headers['authorization']?.split(' ')[1];  // Bearer token'ı al
-
-            // Token'ı localStorage veya state'e kaydedebilirsin
-            //if (token) {
-              //  localStorage.setItem('token', token);}
-
-            console.log("Login successful:", response.data);
-            router.push('/user');
+            await login(email, password);
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                console.error("Login failed:", error.response?.data);
-                setError(error.response?.data?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.');
-            } else {
-                console.error("Error occurred:", error);
-                setError('Bir hata oluştu. Lütfen tekrar deneyin.');
-            }
+            console.error(error);
+            setError((error as Error).message);
         }
     };
 
@@ -47,13 +55,13 @@ const Login = () => {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                minHeight: '100vh',  // Sayfa kaydırıldığında da arka planın görünmesini sağlar
+                minHeight: '100vh',
                 width: '100vw',
                 position: 'relative',
                 backgroundImage: `url(${backgroundImageUrl})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                backgroundAttachment: 'fixed',  // Arka plan sabitlenmiş olacak
+                backgroundAttachment: 'fixed',
             }}
         >
             <Box

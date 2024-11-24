@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Box, AppBar, Toolbar, Typography, Button, IconButton } from '@mui/material';
-import {ExitToApp, Menu} from '@mui/icons-material';
+import { Box, AppBar, Toolbar,  Button, IconButton } from '@mui/material';
+import {ExitToApp} from '@mui/icons-material';
 import {useRouter} from "next/navigation";
 
 const CreatePage = () => {

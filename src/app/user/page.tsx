@@ -1,25 +1,29 @@
 'use client';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { AppBar, Box, Button, Container, MenuItem, Select, Toolbar, Typography, IconButton } from '@mui/material';
-import {ExitToApp, Favorite, Menu} from '@mui/icons-material';
+import {ExitToApp, Favorite} from '@mui/icons-material';
 import { useRouter } from "next/navigation";
 
-const events = [
-    {
-        title: "M Lisa Konseri",
-        description: `M Lisa, Türk rap sahnesinin yükselen yıldızlarından biridir. İlk olarak "Melisa Zey" adıyla müziğe adım atan güzel sanatçı, kısa sürede M Lisa ismiyle büyük bir çıkış yakaladı. Etkileyici tarzıyla herkesin gözdesi olan M Lisa, güçlü sözleri ve özgün tarzıyla beğenilmektedir. Özellikle "ARABA" adlı şarkısıyla müzik kariyerinde önemli bir dönemeç yaşadı. M Lisa, rap müziğine kattığı özgün dokunuşlarla adından sıkça söz ettirmektedir.
-    🙌Sakın bu şahane performansı kaçırma sen de bize katıl!`,
-        price: "250 ₺",
-    },
-    {
-        title: "Köy Okulu Ziyareti",
-        description: `Toplumsal dayanışmayı ve sosyal sorumluluğu teşvik etmek amacıyla düzenlenmiş olduğumuz Köy Okulu Ziyareti Etkinliği'ne sizleri davet etmekten mutluluk duyuyoruz!
-    Bu etkinlik kapsamında, ihtiyaç sahibi köy okullarını ziyaret ederek oradaki öğrencilere kitap, kırtasiye malzemeleri, oyunlar ve çeşitli eğitim materyalleri hediye edeceğiz. Amacımız, köy okullarında okuyan kardeşlerimize moral desteği sunmak, eğitim yolculuklarında onlara katkıda bulunmak ve aramızda sevgi köprüleri kurmaktır.`,
-    },
-];
 
 const UserPage: React.FC = () => {
     const router = useRouter();
+    const [events, setEvents] = useState<any[]>([]); // Etkinlikler state'i
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const response = await fetch('http://localhost:8080/api/events'); // Etkinlik API'si
+                const data = await response.json();
+                setEvents(data); // Etkinlikleri state'e ata
+            } catch (error) {
+                console.error('Etkinlikler alınırken hata oluştu:', error);
+            } finally {
+                setLoading(false); // Yükleme tamamlandı
+            }
+        };
+        fetchEvents();
+    }, []);
 
     // Function to navigate to profile page
     const navigateToProfile = () => {
@@ -37,25 +41,45 @@ const UserPage: React.FC = () => {
     const navigateToHome= () => {
         router.push('/user');
     };
+    // Logout fonksiyonu
     const handleLogout = () => {
-        router.push('/');
+        // Saklanan bilgileri temizle
+        localStorage.removeItem('token');
+        console.log('Çıkış yapıldı, bilgiler temizlendi.');
+
+        // Kullanıcıyı giriş sayfasına yönlendir
+        window.location.href = '/login';
     };
 
+    if (loading) {
+        return <Typography variant="h6">Yükleniyor...</Typography>;
+    }
 
     return (
         <Box
             sx={{
-                backgroundImage: 'url(https://images.pexels.com/photos/62693/pexels-photo-62693.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                height: '100vh',  // Sayfanın tam yüksekliği
-                color: 'white',
-                backgroundAttachment: 'fixed', // Arka plan sabitlenmiş olacak
-                position: 'relative', // Sabitleme için konumlandırma
+                position: 'relative', // İçerik için position: relative ayarlıyoruz
+                minHeight: '100vh', // Sayfanın en az tüm ekranı kapsaması için
             }}
         >
+            {/* Arka plan */}
+            <Box
+                sx={{
+                    backgroundImage: 'url(https://images.pexels.com/photos/62693/pexels-photo-62693.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: -1,
+                    height: '100%',
+                    width: '100%',
+                }}
+            />
 
-        {/* Navigation Bar */}
+            {/* Navigation Bar */}
             <AppBar position="static" sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', elevation: 0 }}>
                 <Toolbar sx={{ justifyContent: "space-between" }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -98,7 +122,6 @@ const UserPage: React.FC = () => {
                     </Select>
                 </Box>
 
-                {/* Event Cards */}
                 {events.map((event, index) => (
                     <Box
                         key={index}
@@ -116,7 +139,16 @@ const UserPage: React.FC = () => {
                         <Box flex="1">
                             <Typography variant="h5" color="red" mb={1}>{event.title}</Typography>
                             <Typography variant="body2" mb={2}>{event.description}</Typography>
+
+                            {/* Display other event details */}
+                            <Typography variant="body2" mb={1}><strong>Category:</strong> {event.categoryName}</Typography>
+                            <Typography variant="body2" mb={1}><strong>Location:</strong> {event.location}</Typography>
+                            <Typography variant="body2" mb={1}><strong>Date:</strong> {new Date(event.eventDate).toLocaleDateString()}</Typography>
+                            <Typography variant="body2" mb={1}><strong>Status:</strong> {event.status}</Typography>
+                            <Typography variant="body2" mb={1}><strong>Max Capacity:</strong> {event.maxCapacity}</Typography>
+                            <Typography variant="body2" mb={1}><strong>Min Age:</strong> {event.minAge}</Typography>
                         </Box>
+
                         <Box display="flex" flexDirection="column" alignItems="center" ml={3}>
                             {event.price && <Typography variant="h6">{event.price}</Typography>}
                             <Button variant="contained" color="error" startIcon={<Favorite />}>
