@@ -1,9 +1,27 @@
-'use client'
+'use client';
 import React, { useState } from 'react';
 import { Box, Button, Checkbox, FormControlLabel, TextField, Typography, Link } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 const backgroundImageUrl = 'https://images.pexels.com/photos/9668274/pexels-photo-9668274.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
+
+// Token'dan payload bilgilerini çözmek için bir yardımcı fonksiyon
+const parseJwt = (token: string) => {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+            atob(base64)
+                .split('')
+                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+        );
+        return JSON.parse(jsonPayload); // Token'ın payload kısmını döndürüyoruz
+    } catch (error) {
+        console.error("Invalid token:", error);
+        return null;
+    }
+};
 
 // Login fonksiyonu
 const login = async (email: string, password: string) => {
@@ -18,15 +36,21 @@ const login = async (email: string, password: string) => {
         const token = data.token;
         const role = data.role;
 
-        localStorage.setItem('authToken', token);
+        localStorage.setItem('authToken', token); // Token'ı localStorage'a kaydediyoruz
 
+        // Token'dan email'i alıyoruz
+        const decodedToken = parseJwt(token);
+        const emailFromToken = decodedToken?.email;
 
+        console.log('Token:', token);
+        console.log('Email from token:', emailFromToken);
+
+        // Rol bazlı yönlendirme
         if (role === 'ADMIN') {
             window.location.href = '/admin';
         } else if (role === 'USER') {
             window.location.href = '/user';
         }
-        console.log(token);
     } else {
         throw new Error('Geçersiz e-posta veya parola!');
     }
@@ -75,7 +99,7 @@ const Login = () => {
                     border: '2px solid rgba(255, 255, 255, 0.3)',
                 }}
             >
-                <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ color: 'white'}}>
+                <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ color: 'white' }}>
                     EventCenter
                 </Typography>
 

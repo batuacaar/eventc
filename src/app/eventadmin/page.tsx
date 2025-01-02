@@ -99,6 +99,7 @@ const EventCreate = () => {
 
         try {
             const token = localStorage.getItem('authToken');
+            console.log(localStorage.getItem('authtoken'));
             const response = await axios.post('http://localhost:8080/api/events/create', formData, {
                 headers: {
                     'Content-Type': 'application/json',

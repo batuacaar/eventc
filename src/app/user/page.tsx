@@ -10,6 +10,7 @@ const UserPage: React.FC = () => {
     const [events, setEvents] = useState<any[]>([]); // Etkinlikler state'i
     const [loading, setLoading] = useState(true);
 
+
     useEffect(() => {
         const fetchEvents = async () => {
             try {
@@ -22,6 +23,14 @@ const UserPage: React.FC = () => {
                 setLoading(false); // Yükleme tamamlandı
             }
         };
+
+        // Retrieve the token from localStorage
+        const token = localStorage.getItem('authToken');
+        const emailFromToken = token ? JSON.parse(atob(token.split('.')[1])).email : null; // Parse the token for email (if JWT format)
+
+        console.log('authToken:', token);
+        console.log('Email from token:', emailFromToken);
+
         fetchEvents();
     }, []);
 

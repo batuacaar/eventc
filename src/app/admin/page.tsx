@@ -8,6 +8,11 @@ import {ExitToApp} from "@mui/icons-material";
 
 const AdminPage: React.FC = () => {
     const router = useRouter();
+    const token = localStorage.getItem('authToken');
+    const emailFromToken = token ? JSON.parse(atob(token.split('.')[1])).email : null; // Parse the token for email (if JWT format)
+
+    console.log('authToken:', token);
+    console.log('Email from token:', emailFromToken);
 
     const navigateToEventAdmin = () => {
         router.push('/eventadmin');
@@ -16,6 +21,10 @@ const AdminPage: React.FC = () => {
     const handleLogout = () => {
         // Giriş çıkış işlemleri ve yönlendirme işlemleri burada yapılabilir.
         router.push('/login'); // Örneğin giriş sayfasına yönlendirin.
+    };
+
+    const navigateToProfile = () => {
+        router.push('/myprofile');
     };
 
     return (
@@ -39,7 +48,7 @@ const AdminPage: React.FC = () => {
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                         <Button color="inherit"  sx={{ textTransform: 'none' }}>Gelen Kutusu</Button>
-                        <Button color="inherit"  sx={{ textTransform: 'none' }}>Profilim</Button>
+                        <Button color="inherit" onClick={navigateToProfile} sx={{ textTransform: 'none' }}>Profilim</Button>
                         <Button variant="contained" color="error" onClick={navigateToEventAdmin} sx={{ textTransform: 'none' }}>Etkinlik Oluştur</Button>
                         <IconButton color="inherit" onClick={handleLogout}>
                             <ExitToApp />
